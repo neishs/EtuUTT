@@ -9,6 +9,8 @@ use Etu\Core\UserBundle\Entity\Organization;
 // Import annotations
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class MainController extends Controller
 {
@@ -18,9 +20,14 @@ class MainController extends Controller
      *
      * @param mixed $page
      */
-    public function indexAction($page)
+    public function indexAction($page, Request $request)
     {
         /** @var $em EntityManager */
+        if (!$request->query->has('q')) {
+            throw $this->createNotFoundException('No term to search provided');
+        }
+        $term = $request->query->get('q');
+
         $em = $this->getDoctrine()->getManager();
 
         $query = $em->createQueryBuilder()
@@ -28,14 +35,21 @@ class MainController extends Controller
             ->from('EtuUserBundle:Organization', 'a')
             ->leftJoin('a.president', 'p')
             ->where('a.name NOT LIKE \'Elus%\'')
+            ->andWhere('a.name LIKE :q')
+            ->setParameter('q', '%'.$term.'%')
             ->orderBy('a.name')
             ->getQuery();
+
+        $query->useResultCache(true, 3600 * 24);
 
         $orgas = $this->get('knp_paginator')->paginate($query, $page, 10);
 
         return [
             'pagination' => $orgas,
+            'term' => $term,
         ];
+
+
     }
 
     /**
