@@ -29,6 +29,17 @@
             {{ knp_pagination_render(pagination) }}
         </div>
 
+        <div class="align-right form-inline">
+            {#<a href="" class="btn btn-link">Recherche avancée</a>#}
+
+        <form method="get" action="{{ path('orgas_index') }}">
+            <div class="input-append">
+                <input class="span3" type="text" name="q" value="{{ term|default('') }}">
+                <button class="btn" type="submit">Rechercher</button>
+            </div>
+        </form>
+      </div>
+
         {% for key, orga in pagination %}
             <a href="{{ path('orgas_view', {'login': orga.login}) }}" class="asso{% if key == 0 %} asso-first{% endif %}">
                 <img src="{{ asset('uploads/logos/'~orga.logo) }}" alt="{{ orga.name }}" title="{{ orga.name }}" class="asso-logo" />
